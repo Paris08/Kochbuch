@@ -1,0 +1,39 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue: #1a3a5c;
+  --gold: #c8a84b;
+  --cream: #faf6ee;
+  --white: #ffffff;
+  --blue-light: rgba(26,58,92,0.06);
+  --gold-light: rgba(200,168,75,0.12);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  font-family: 'Lato', sans-serif;
+  color: #333;
+  min-height: 100vh;
+}
+
+button { font-family: inherit; }
+input { font-family: inherit; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.fade-up { animation: fadeUp 0.4s ease forwards; }

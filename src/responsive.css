@@ -1,0 +1,32 @@
+/* Mobile responsive overrides */
+@media (max-width: 640px) {
+  .recipe-two-col {
+    grid-template-columns: 1fr !important;
+  }
+  .recipe-two-col > div:first-child {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(200,168,75,0.2);
+    padding-bottom: 20px;
+    margin-bottom: 4px;
+  }
+  .stats-row .stat {
+    flex: 1 1 45% !important;
+  }
+  .device-btn {
+    min-width: 90px !important;
+    padding: 8px 10px !important;
+  }
+  .card-header {
+    padding: 18px 20px !important;
+  }
+  .card-header .emoji {
+    font-size: 36px !important;
+  }
+  .card-header .name {
+    font-size: 20px !important;
+  }
+  .search-input {
+    font-size: 14px !important;
+    padding: 13px 14px !important;
+  }
+}
