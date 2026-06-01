@@ -11,9 +11,11 @@ export default async (req) => {
     }
 
     const deviceLabels = {
-      airfryer: "Air Fryer (Ninja Dual Zone 9.5L mit 2 Fächern übereinander)",
-      backofen: "Backofen",
-      topf: "Topf / Herd",
+      airfryer:     "Air Fryer (Ninja Dual Zone 9.5L mit 2 Fächern übereinander)",
+      backofen:     "Backofen",
+      topf:         "Topf / Herd",
+      gasgrill:     "Gas Grill (direktes und indirektes Grillen)",
+      raeucherofen: "Räucherofen / Smoker (BBQ, Low & Slow)",
     };
 
     const systemPrompt = `Du bist ein Koch-Assistent. Antworte NUR mit einem validen JSON-Objekt. Kein Text davor oder danach, keine Backticks, kein Markdown, nur reines JSON.
@@ -30,12 +32,16 @@ Antworte exakt in diesem JSON-Format:
   "schritte": ["Schritt 1", "Schritt 2", "Schritt 3"],
   "kochzeit": { "vorbereitung": "10 Min", "kochen": "20 Min", "gesamt": "30 Min" },
   "temperatur": "200°C",
-  "ninja_hinweis": "Tipp für Ninja Dual Zone mit 2 Fächern",
-  "geraet_hinweis": null,
+  "ninja_hinweis": "Nur bei Air Fryer: Tipp für Ninja Dual Zone mit 2 Fächern, sonst null",
+  "geraet_hinweis": "Bei Grill/Räucherofen/Backofen/Topf: spezifischer Tipp für das Gerät, sonst null",
   "tipp": "Ein hilfreicher Koch-Tipp"
 }
 
-Wichtig: Bei Air Fryer immer konkrete Temperatur und Zeit angeben und beide Fächer sinnvoll nutzen.`;
+Wichtig:
+- Bei Air Fryer: konkrete Temperatur und Zeit, beide Fächer sinnvoll nutzen
+- Bei Gas Grill: direkte vs. indirekte Hitze erklären, Temperatur und Zeit
+- Bei Räucherofen: Holzart empfehlen, Temperatur (meist 80-150°C), Zeit (oft mehrere Stunden)
+- Bei griechisch: authentische griechische Rezepte`;
 
     const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -64,8 +70,7 @@ Wichtig: Bei Air Fryer immer konkrete Temperatur und Zeit angeben und beide Fäc
     }
 
     const text = groqData.choices?.[0]?.message?.content || "";
-    
-    // JSON extrahieren
+
     let parsed;
     try {
       parsed = JSON.parse(text);
