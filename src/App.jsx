@@ -112,10 +112,26 @@ function AuthScreen() {
 
   async function submit() {
     setLoading(true); setMsg(null);
-    const fn = mode === "login" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
-    const { error } = await fn({ email, password: pw });
-    if (error) setMsg({ type:"error", text: error.message });
-    else if (mode === "register") setMsg({ type:"ok", text:"Bestätigungs-Email gesendet! Bitte E-Mail prüfen." });
+    try {
+      let result;
+      if (mode === "login") {
+        result = await supabase.auth.signInWithPassword({ email, password: pw });
+      } else {
+        result = await supabase.auth.signUp({ email, password: pw });
+      }
+      const { error, data } = result;
+      if (error) {
+        setMsg({ type:"error", text: error.message });
+      } else if (mode === "register") {
+        if (data?.user?.identities?.length === 0) {
+          setMsg({ type:"error", text: "Diese Email ist bereits registriert. Bitte anmelden." });
+        } else {
+          setMsg({ type:"ok", text:"Registrierung erfolgreich! Bitte E-Mail bestätigen falls nötig." });
+        }
+      }
+    } catch(e) {
+      setMsg({ type:"error", text: "Fehler: " + e.message });
+    }
     setLoading(false);
   }
 
