@@ -367,6 +367,32 @@ export default function App() {
     setLoading(true);
     setError(null);
     setRecipe(null);
+
+    const deviceLabels = {
+      airfryer: "Air Fryer (Ninja Dual Zone 9.5L mit 2 Fächern)",
+      backofen: "Backofen",
+      topf: "Topf / Herd",
+    };
+
+    const systemPrompt = `Du bist ein Koch-Assistent. Antworte NUR mit einem validen JSON-Objekt, kein Text davor oder danach, keine Backticks.
+
+Kochgerät: ${deviceLabels[device]}
+Kategorie: ${category === "griechisch" ? "Griechisch" : "Allgemein"}
+
+JSON-Format:
+{
+  "name": "Name des Gerichts",
+  "emoji": "passendes Emoji",
+  "portionen": "2-3 Portionen",
+  "zutaten": ["Zutat 1", "Zutat 2"],
+  "schritte": ["Schritt 1", "Schritt 2"],
+  "kochzeit": { "vorbereitung": "10 Min", "kochen": "20 Min", "gesamt": "30 Min" },
+  "temperatur": "200°C oder null",
+  "ninja_hinweis": "Ninja Dual Zone Tipp wenn airfryer, sonst null",
+  "geraet_hinweis": "Hinweis wenn backofen oder topf, sonst null",
+  "tipp": "Ein Koch-Tipp"
+}`;
+
     try {
       const res = await fetch("/api/rezept", {
         method: "POST",
@@ -377,7 +403,7 @@ export default function App() {
       if (!res.ok || data.error) throw new Error(data.error || "Fehler");
       setRecipe(data);
     } catch (e) {
-      setError("Rezept konnte nicht geladen werden: " + e.message);
+      setError("Fehler: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -460,13 +486,15 @@ export default function App() {
 }
 
 function RecipeCard({ recipe, device }) {
-  const d = recipe[device];
-  const steps = recipe.schritte[device];
+  // Groq gibt flaches JSON zurück, statische DB hat device-Unterstruktur
+  const d = recipe[device] || recipe;
+  const steps = Array.isArray(recipe.schritte) ? recipe.schritte : (recipe.schritte?.[device] || []);
   const stats = [
-    { icon: "⏱", label: "Vorbereitung", val: d.vor },
-    { icon: "🔥", label: "Kochen", val: d.koch },
-    { icon: "⌛", label: "Gesamt", val: d.gesamt, hi: true },
-    (d.temp && d.temp !== "–") ? { icon: "🌡", label: "Temperatur", val: d.temp, hi: true } : null,
+    { icon: "⏱", label: "Vorbereitung", val: d.vor || recipe.kochzeit?.vorbereitung },
+    { icon: "🔥", label: "Kochen", val: d.koch || recipe.kochzeit?.kochen },
+    { icon: "⌛", label: "Gesamt", val: d.gesamt || recipe.kochzeit?.gesamt, hi: true },
+    ((d.temp || recipe.temperatur) && (d.temp || recipe.temperatur) !== "null" && (d.temp || recipe.temperatur) !== "–")
+      ? { icon: "🌡", label: "Temperatur", val: d.temp || recipe.temperatur, hi: true } : null,
   ].filter(Boolean);
 
   return (
@@ -489,19 +517,19 @@ function RecipeCard({ recipe, device }) {
         ))}
       </div>
 
-      {device === "airfryer" && d.ninja && (
+      {device === "airfryer" && (d.ninja || recipe.ninja_hinweis) && (d.ninja || recipe.ninja_hinweis) !== "null" && (
         <div style={S.hbox}>
           <span style={{ fontSize: 22, flexShrink: 0 }}>💨</span>
           <div>
             <div style={{ fontWeight: "bold", color: BLUE, fontSize: 13, marginBottom: 3 }}>Ninja Dual Zone Tipp</div>
-            <div style={S.ht}>{d.ninja}</div>
+            <div style={S.ht}>{d.ninja || recipe.ninja_hinweis}</div>
           </div>
         </div>
       )}
-      {device !== "airfryer" && d.hinweis && (
+      {device !== "airfryer" && (d.hinweis || recipe.geraet_hinweis) && (d.hinweis || recipe.geraet_hinweis) !== "null" && (
         <div style={{ ...S.hbox, background: "rgba(26,58,92,0.05)", border: "1px solid rgba(26,58,92,0.15)" }}>
           <span style={{ fontSize: 22, flexShrink: 0 }}>💡</span>
-          <div style={S.ht}>{d.hinweis}</div>
+          <div style={S.ht}>{d.hinweis || recipe.geraet_hinweis}</div>
         </div>
       )}
 
